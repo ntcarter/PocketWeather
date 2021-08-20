@@ -1,0 +1,13 @@
+//TODO not getting alerts from json
+//TODO UI placement and etc.
+//TODO Create fragment for when they tap an hourly or daily thing
+//TODO Settings with units and conversions
+//TODO location settings.
+//TODO make the app not update if there is already something in the DB. If there is something update after a certain time has passed
+
+// TODO fragment requests data from the view model
+// TODO viewModel decides whether or not to update the data from the api (more than 30 min from current time has passed)
+// TODO the view model inserts new data if needed or sets a live data object to Forecast data
+// TODO fragment observes the Forecast live data and update UI based on that data
+// TODO when the data changes we will need to change lists in each recycler view.
+// TODO need to find a way to automatically update after 10 min has passed and app is active
