@@ -1,6 +1,5 @@
 package com.ntc.pocketweather.db
 
-import android.util.Log
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -10,19 +9,16 @@ import com.ntc.pocketweather.api.response.*
 
 private const val TAG = "Converters"
 
-// TODO remove tmp values and logging
 class Converters {
     private val gson = Gson()
 
     @TypeConverter
     fun fromCurrent(current: Current): String {
-        Log.d(TAG, "fromCurrent: FROM CURRENT $current")
         return gson.toJson(current).toString()
     }
 
     @TypeConverter
     fun toCurrent(str: String): Current {
-        Log.d(TAG, "toCurrent: TO CURRENT $str")
         val json: JsonObject = JsonParser().parse(str).asJsonObject
 
         val myType = object : TypeToken<List<Weather>>() {}.type
@@ -48,13 +44,11 @@ class Converters {
 
     @TypeConverter
     fun fromListDaily(list: List<Daily>): String {
-        Log.d(TAG, "fromListDaily: FROM DAILY: $list")
         return gson.toJson(list).toString()
     }
 
     @TypeConverter
     fun toListDaily(str: String): List<Daily> {
-        Log.d(TAG, "toListDaily: TO DAILY: $str")
         val dailyList: MutableList<Daily> = mutableListOf()
         val jsonArr = JsonParser().parse(str).asJsonArray
 
@@ -116,26 +110,20 @@ class Converters {
 
     @TypeConverter
     fun fromListHourly(list: List<Hourly>): String {
-        Log.d(TAG, "fromListHourly:HHGHGHGHGHGHGHGHG $list")
-        Log.d(TAG, "fromListHourly:HHGHGHGHGHGHGHGHG ${gson.toJson(list).toString()}")
         return gson.toJson(list).toString()
     }
 
     @TypeConverter
     fun toListHourly(str: String): List<Hourly> {
-        Log.d(TAG, "toListHourly: STRING::::: $str")
         val hourlyList: MutableList<Hourly> = mutableListOf()
         val jsonArr = JsonParser().parse(str).asJsonArray
 
         // for each index in json create a weatherXX object and add it to the list to return
         val myType = object : TypeToken<List<WeatherXX>>() {}.type
-//        Log.d(TAG, "toListHourly: MYTYPE: $myType")
         for (hourly in jsonArr) {
             val hourlyJson = hourly.asJsonObject
-//            Log.d(TAG, "toListHourly: HOURLYJSON $hourlyJson")
             //Get the WeatherXX list
             var weatherXX = gson.fromJson<List<WeatherXX>>(hourlyJson["weather"], myType)
-//            Log.d(TAG, "toListHourly: WEATHERXX: $weatherXX")
             if(weatherXX == null){
                 weatherXX = listOf()
             }
@@ -175,13 +163,11 @@ class Converters {
 
     @TypeConverter
     fun fromListMinutely(list: List<Minutely>): String {
-        Log.d(TAG, "fromListMinutely: FROM MIN: $list")
         return gson.toJson(list).toString()
     }
 
     @TypeConverter
     fun toListMinutely(str: String): List<Minutely> {
-        Log.d(TAG, "fromListMinutely: TO MIN: $str")
         val minutelyList: MutableList<Minutely> = mutableListOf()
         val jsonArr = JsonParser().parse(str).asJsonArray
 
@@ -191,10 +177,37 @@ class Converters {
             minutelyList.add(
                 Minutely(
                     minutelyJson["dt"].asInt,
-                    minutelyJson["precipitation"].asInt
+                    minutelyJson["precipitation"].asDouble
                 )
             )
         }
         return minutelyList
+    }
+
+    @TypeConverter
+    fun fromListAlert(list: List<Alert>): String {
+        return gson.toJson(list).toString()
+    }
+
+    @TypeConverter
+    fun toListAlert(str: String): List<Alert> {
+        val alertList: MutableList<Alert> = mutableListOf()
+        val jsonArr = JsonParser().parse(str).asJsonArray
+
+        for(alert in jsonArr) {
+            val alertJson = alert.asJsonObject
+
+            alertList.add(
+                Alert(
+                    alertJson["description"].asString,
+                    alertJson["end"].asInt,
+                    alertJson["event"].asString,
+                    alertJson["sender_name"].asString,
+                    alertJson["start"].asInt,
+                    listOf() // dont save tags
+                )
+            )
+        }
+        return alertList
     }
 }

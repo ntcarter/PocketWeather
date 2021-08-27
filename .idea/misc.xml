@@ -3,12 +3,16 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/drawable/alert_layout_background.xml" value="0.3769230769230769" />
+        <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/drawable/alert_outline.xml" value="0.33" />
         <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/drawable/divider.xml" value="0.3769230769230769" />
         <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/drawable/divider_Dark.xml" value="0.2203125" />
         <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/drawable/ic_baseline_refresh_24.xml" value="0.3769230769230769" />
         <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/drawable/ic_refresh.xml" value="0.3769230769230769" />
         <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/drawable/ic_search_24.xml" value="0.3769230769230769" />
+        <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/drawable/normal_layout_background.xml" value="0.3769230769230769" />
         <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
+        <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/layout/daily_dialog.xml" value="0.33" />
         <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/layout/fragment_forecast.xml" value="0.33" />
         <entry key="..\:/githubDesktop/PocketWeather/app/src/main/res/layout/item_weather.xml" value="0.36666666666666664" />
       </map>

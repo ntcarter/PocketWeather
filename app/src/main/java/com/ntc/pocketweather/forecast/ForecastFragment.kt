@@ -2,32 +2,36 @@ package com.ntc.pocketweather.forecast
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationManager
 import android.os.Bundle
-import android.provider.Settings
-import android.util.Log
+import android.os.Looper
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.tasks.Task
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.ntc.pocketweather.R
 import com.ntc.pocketweather.adapters.ForecastAdapter
+import com.ntc.pocketweather.api.response.Daily
 import com.ntc.pocketweather.api.response.Forecast
+import com.ntc.pocketweather.databinding.DailyDialogBinding
 import com.ntc.pocketweather.databinding.FragmentForecastBinding
 import com.ntc.pocketweather.repository.ForecastRepository
-import com.ntc.pocketweather.util.Constants.Companion.PERMISSION_REQUEST_CODE
+import com.ntc.pocketweather.util.Constants.Companion.REQUEST_CHECK_SETTINGS
+import com.ntc.pocketweather.util.convertTime
+import com.ntc.pocketweather.util.convertTimeToDay
 import com.ntc.pocketweather.util.getWeatherIcon
 import dagger.hilt.android.AndroidEntryPoint
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 
 
@@ -45,16 +49,45 @@ class ForecastFragment : Fragment(R.layout.fragment_forecast),
 
     private val viewModel: ForecastViewModel by viewModels()
 
-    private lateinit var locationManager: LocationManager
+    // google play location service variables
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
+
+    // Permission callback
+    private lateinit var requestPermission: ActivityResultLauncher<String>
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Log.d(TAG, "onViewCreated: -----------------------------------")
         super.onViewCreated(view, savedInstanceState)
 
         _binding = FragmentForecastBinding.bind(view)
 
-        locationManager = activity?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        checkLocationSettings()
+
+        requestPermission =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                //permission granted
+                if (isGranted) {
+                    getNewLocation()
+                }
+            }
+
+        // defines out location callback which will be called when there are new location updates
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                val mostRecentLocation =
+                    locationResult.locations[locationResult.locations.size - 1] // get the last (most recent) location in the list
+
+                //get new forecast based on this new location
+                viewModel.setNewLocation(mostRecentLocation.latitude, mostRecentLocation.longitude)
+                viewModel.getNewForecast()
+                stopLocationUpdates()
+            }
+        }
 
         val minutelyAdapter = ForecastAdapter(listOf(), this)
         val hourlyAdapter = ForecastAdapter(listOf(), this)
@@ -92,13 +125,18 @@ class ForecastFragment : Fragment(R.layout.fragment_forecast),
                 this.adapter = dailyAdapter
                 addItemDecoration(dividerDark)
             }
-        }
+
+            ivRefresh.setOnClickListener {
+                Toast.makeText(requireContext(), "Loading new weather data", Toast.LENGTH_SHORT)
+                    .show()
+                getNewLocation()
+            }
+
+        } // binging.apply{} end
 
         viewModel.getForecastFromDB().observe(viewLifecycleOwner, {
-            Log.d(TAG, "onViewCreated: llllleleleleLELELELELELELRKKRRKRKRKKRKRKR")
             // when the forecast changes we need to update the ui
             if (it != null) {
-                Log.d(TAG, "onViewCreated: UPDATING UI!!!!!!!!!!!!!!!!!!!!")
                 updateUI(it)
 
                 minutelyAdapter.items = it.minutely
@@ -112,25 +150,42 @@ class ForecastFragment : Fragment(R.layout.fragment_forecast),
             }
         })
 
-        binding.ivRefresh.setOnClickListener {
-            Toast.makeText(requireContext(), "Loading new weather data", Toast.LENGTH_SHORT).show()
-            getNewLocation()
-        }
-
-        Log.d(TAG, "onViewCreated: ENDS")
+        viewModel.alerts.observe(viewLifecycleOwner, {
+            if (it.isNullOrEmpty()) {
+                // no alerts so check alert view visibility and background
+                if (binding.tvAlert.visibility == View.VISIBLE) {
+                    binding.tvAlert.visibility = View.INVISIBLE
+                    binding.constraintLayout.setBackgroundResource(R.drawable.normal_layout_background)
+                }
+            } else {
+                // alerts
+                if (binding.tvAlert.visibility == View.INVISIBLE) {
+                    binding.tvAlert.visibility = View.VISIBLE
+                    binding.constraintLayout.setBackgroundResource(R.drawable.alert_layout_background)
+                }
+            }
+        })
     }
 
     private fun updateUI(foreCast: Forecast) {
-
         binding.apply {
             // Text
-            tvCurrentDescription.text = foreCast.current.weather[0].description
+            tvAlert.setOnClickListener {
+                if (!viewModel.alerts.value.isNullOrEmpty()) {
+                    showWeatherAlertDialog()
+                }
+            }
+            if (!foreCast.alerts.isNullOrEmpty()) {
+                viewModel.updateAlerts(foreCast)
+            }
+            tvCityName.text = "City: ${foreCast.CityName}"
+            tvCurrentDescription.text = "${foreCast.current.weather[0].description}"
             tvFeelsLike.text = "Feels like: ${foreCast.current.feels_like}°"
             tvActualTemp.text = "Current Temperature: ${foreCast.current.temp}°"
-            tvLat.text = "Latitude: ${foreCast.lat}°"
-            tvLon.text = "Longitude: ${foreCast.lon}°"
-            tvSunrise.text = "Sunrise: ${convertTime(foreCast.current.sunrise)}"
-            tvSunset.text = "Sunset: ${convertTime(foreCast.current.sunset)}"
+            tvLat.text = "Lat: ${foreCast.lat}°"
+            tvLon.text = "Lon: ${foreCast.lon}°"
+            tvSunrise.text = "Sunrise: ${convertTime(foreCast.current.sunrise, true)}"
+            tvSunset.text = "Sunset: ${convertTime(foreCast.current.sunset, true)}"
             tvHumidity.text = "Humidity: ${foreCast.current.humidity}%"
             tvWindSpeed.text = "WindSpeed: ${foreCast.current.wind_speed} m/h"
             tvUVI.text = "UVI: ${foreCast.current.uvi}"
@@ -141,84 +196,120 @@ class ForecastFragment : Fragment(R.layout.fragment_forecast),
         }
     }
 
-
-    private fun convertTime(timeInSeconds: Int): String {
-        val format = SimpleDateFormat("HH:mm", Locale.US)
-        var formattedTime = format.format(Date(timeInSeconds * 1000L))
-
-        val time = formattedTime.substring(0, 2).toInt()
-
-        if (time < 12) {
-            formattedTime += " a.m"
+    @SuppressLint("MissingPermission")
+    private fun getNewLocation() {
+        if (checkPermissions()) {
+            startLocationUpdates()
         } else {
-            if (time > 12) {
-                val newTime = "0" + (time - 12).toString()
-                formattedTime = formattedTime.replaceRange(0..2, "$newTime:")
-            }
-            formattedTime += " p.m"
+            requestLocationPermissions()
         }
-        return formattedTime
     }
 
     private fun checkPermissions(): Boolean {
-        Log.d(TAG, "checkPermissions: CHECKING PERMISSIONS")
-        return ActivityCompat.checkSelfPermission(
+        return ContextCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun isLocationEnabled(): Boolean {
-        Log.d(TAG, "isLocationEnabled: CHECKING LOCATION")
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
-            LocationManager.NETWORK_PROVIDER
-        )
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun getNewLocation() {
-        if (checkPermissions()) {
-            if (isLocationEnabled()) {
-                getLocation()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Please enable location settings",
-                    Toast.LENGTH_LONG
-                ).show()
-                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                startActivity(intent)
-            }
-        } else {
-            Log.d(TAG, "getNewLocation: PERMISSIONS NOT GRANTED ")
-            requestLocationPermissions()
-        }
-    }
-
-    @SuppressLint("MissingPermission") // this permission is already checked for
-    private fun getLocation() {
-        Log.d(TAG, "getLocation: CALLED")
-        val location: Location? =
-            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        if (location != null) {
-            Log.d(
-                TAG,
-                "onViewCreated: LAT: ${location.latitude} , LONG: ${location.longitude}"
-            )
-            viewModel.setNewLocation(location.latitude, location.longitude)
-            viewModel.getNewForecast()
-        }else {
-            Log.d(TAG, "getLocation: LOCATION ERROR: $location")
-        }
-    }
-
     private fun requestLocationPermissions() {
-        Log.d(TAG, "requestLocationPermissions: REQUESTING LOCATION PERMISSIONS")
-        ActivityCompat.requestPermissions(
-            requireActivity(), arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ), PERMISSION_REQUEST_CODE
+        requestPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+    @SuppressLint("MissingPermission") // the permission is already checked before this function is called
+    private fun startLocationUpdates() {
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
         )
+    }
+
+    private fun createLocationRequest(): LocationRequest {
+        return LocationRequest.create().apply {
+            interval = 10000
+            fastestInterval = 10000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+    }
+
+    private fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+
+    private fun checkLocationSettings() {
+        val builder = LocationSettingsRequest.Builder()
+
+        val client: SettingsClient = LocationServices.getSettingsClient(requireActivity())
+        val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+
+        task.addOnSuccessListener {
+            // All location settings are satisfied. The client can initialize
+            // location requests here.
+            locationRequest = createLocationRequest()
+        }
+
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                // Location settings are not satisfied, but this can be fixed
+                // by showing the user a dialog.
+                try {
+                    // Show the dialog by calling startResolutionForResult(),
+                    // and check the result in onActivityResult().
+                    exception.startResolutionForResult(
+                        requireActivity(),
+                        REQUEST_CHECK_SETTINGS
+                    )
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    // Ignore the error.
+                }
+            }
+        }
+    }
+
+    private fun showWeatherAlertDialog() {
+        var message = ""
+        val alertList = viewModel.alerts.value
+
+        for (alert in alertList!!) { // alerts will only show if there is an alert to show (cannot be null)
+            message += " - ${alert.description} \n"
+        }
+
+        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.AlertDialogTheme)
+            .setTitle("Weather Alert for your area:")
+            .setMessage(message)
+            .setPositiveButton("OK") { _, _ -> }
+            .create()
+        dialog.show()
+    }
+
+    override fun onDailyClick(daily: Daily) {
+        val inflater = requireActivity().layoutInflater
+        val view = inflater.inflate(R.layout.daily_dialog, null)
+        val binding = DailyDialogBinding.bind(view)
+        val day = convertTimeToDay(daily.dt)
+
+        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.AlertDialogTheme)
+            .setView(view)
+            .create()
+
+        binding.apply {
+            tvTodaysTemp.text = "Temp for $day:"
+            tvDailyHigh.text = "High: ${daily.temp.max}"
+            tvDailyLow.text = "Low: ${daily.temp.min}"
+            tvDailyMorning.text = "Morning: ${daily.temp.morn}"
+            tvDailyDay.text = "Mid Day: ${daily.temp.day}"
+            tvDailyEvening.text = "Evening: ${daily.temp.eve}"
+            tvDailyNight.text = "Night: ${daily.temp.night}"
+
+            tvTodaysFeelLike.text = "Feels Like for $day:"
+            tvDailyFLMorning.text = "Morning: ${daily.feels_like.morn}"
+            tvDailyFLMidDay.text = "Mid Day: ${daily.feels_like.day}"
+            tvDailyFLEvening.text = "Evening: ${daily.feels_like.eve}"
+            tvDailyFLNight.text = "Night: ${daily.feels_like.night}"
+        }
+
+        dialog.show()
     }
 
     override fun onDestroy() {

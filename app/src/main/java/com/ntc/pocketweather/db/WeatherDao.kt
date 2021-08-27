@@ -15,4 +15,10 @@ interface WeatherDao {
 
     @Query("SELECT * FROM forecast ORDER BY _id ASC LIMIT 1")
     fun getCurrentForecast(): LiveData<Forecast>
+
+    @Query("SELECT COUNT(*) FROM forecast")
+    suspend fun getCount(): Int
+
+    @Query("DELETE FROM forecast")
+    suspend fun deleteAllForecasts()
 }

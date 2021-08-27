@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:background="@color/blue_gray_300">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cvTodaysTemp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/cvDailyFeelsLike"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/blue_gray_800"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/tvTodaysTemp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Todays Temperature:"
+                android:textColor="@color/blue_gray_100"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDailyHigh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="High:"
+                android:textColor="@color/blue_gray_100" />
+
+            <TextView
+                android:id="@+id/tvDailyLow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Low"
+                android:textColor="@color/blue_gray_100" />
+
+            <TextView
+                android:id="@+id/tvDailyMorning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Morning:"
+                android:textColor="@color/blue_gray_100" />
+
+            <TextView
+                android:id="@+id/tvDailyDay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="MidDay:"
+                android:textColor="@color/blue_gray_100" />
+
+            <TextView
+                android:id="@+id/tvDailyEvening"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Evening:"
+                android:textColor="@color/blue_gray_100" />
+
+            <TextView
+                android:id="@+id/tvDailyNight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Night:"
+                android:textColor="@color/blue_gray_100" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cvDailyFeelsLike"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toEndOf="@+id/cvTodaysTemp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/blue_gray_800"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/tvTodaysFeelLike"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Todays Feels Like:"
+                android:textColor="@color/blue_gray_100"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDailyFLMorning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Morning:"
+                android:textColor="@color/blue_gray_100" />
+
+            <TextView
+                android:id="@+id/tvDailyFLMidDay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mid Day:"
+                android:textColor="@color/blue_gray_100" />
+
+            <TextView
+                android:id="@+id/tvDailyFLEvening"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Evening"
+                android:textColor="@color/blue_gray_100" />
+
+            <TextView
+                android:id="@+id/tvDailyFLNight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Night:"
+                android:textColor="@color/blue_gray_100" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,23 +5,9 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue_gray_900"
+    android:background="@drawable/normal_layout_background"
     android:contentDescription="The Weather Forecast"
     tools:context=".forecast.ForecastFragment">
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
-        android:clickable="true"
-        android:contentDescription="Location Search"
-        android:src="@drawable/ic_search_24"
-        app:backgroundTint="#fff06c4c"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@null" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cvCurrentWeather"
@@ -141,18 +127,9 @@
                     android:textColor="@color/blue_gray_600" />
 
                 <TextView
-                    android:id="@+id/tvLat"
+                    android:id="@+id/textView"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Lat"
-                    android:textColor="@color/blue_gray_600" />
-
-                <TextView
-                    android:id="@+id/tvLon"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Lon"
-                    android:textColor="@color/blue_gray_600" />
+                    android:layout_height="wrap_content" />
 
                 <TextView
                     android:id="@+id/tvSunrise"
@@ -168,6 +145,25 @@
                     android:text="Sunset"
                     android:textColor="@color/blue_gray_600" />
 
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvLat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Lat"
+                    android:textColor="@color/blue_gray_600" />
+
+                <TextView
+                    android:id="@+id/tvLon"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Lon"
+                    android:textColor="@color/blue_gray_600" />
+
             </LinearLayout>
         </ScrollView>
 
@@ -180,6 +176,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:padding="8dp"
         app:cardBackgroundColor="@color/blue_gray_600"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -188,37 +185,63 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="8dp">
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/tvHumidity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Humidity"
+                    android:textColor="@color/blue_gray_50" />
+
+                <TextView
+                    android:id="@+id/tvWindSpeed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="WindSpeed"
+                    android:textColor="@color/blue_gray_50" />
+
+                <TextView
+                    android:id="@+id/tvUVI"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="UVI"
+                    android:textColor="@color/blue_gray_50" />
+
+                <TextView
+                    android:id="@+id/tvVisibility"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Visibility"
+                    android:textColor="@color/blue_gray_50" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/tvHumidity"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Humidity"
-                android:textColor="@color/blue_gray_50" />
+                android:id="@+id/tvAlert"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:autoSizeMaxTextSize="50sp"
+                android:autoSizeMinTextSize="12sp"
+                android:autoSizeStepGranularity="2sp"
+                android:autoSizeTextType="uniform"
+                android:background="@drawable/alert_outline"
+                android:gravity="center"
+                android:text="ALERT"
+                android:textAlignment="center"
+                android:textColor="@color/alert_accent"
+                android:textSize="32sp"
+                android:visibility="invisible" />
 
-            <TextView
-                android:id="@+id/tvWindSpeed"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="WindSpeed"
-                android:textColor="@color/blue_gray_50" />
-
-            <TextView
-                android:id="@+id/tvUVI"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="UVI"
-                android:textColor="@color/blue_gray_50" />
-
-            <TextView
-                android:id="@+id/tvVisibility"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Visibility"
-                android:textColor="@color/blue_gray_50" />
         </LinearLayout>
+
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
@@ -245,7 +268,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Minute by Minute"
-                android:textColor="@color/blue_gray_600" />
+                android:textColor="@color/blue_gray_600"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvMinutely"
@@ -280,7 +304,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Hourly"
-                android:textColor="@color/blue_gray_50" />
+                android:textColor="@color/blue_gray_50"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvHourly"
@@ -316,7 +341,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Daily"
-                android:textColor="@color/blue_gray_600" />
+                android:textColor="@color/blue_gray_600"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvDaily"

@@ -19,4 +19,5 @@
     <color name="blue_gray_700">#FF455A64</color>
     <color name="blue_gray_800">#FF37474F</color>
     <color name="blue_gray_900">#FF263238</color>
+    <color name="alert_accent">#FFE1241f</color>
 </resources>

@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey
 data class Forecast(
     @PrimaryKey(autoGenerate = true)
     val _id: Int = 0,
+    var alerts: List<Alert>?,
     val current: Current,
     val daily: List<Daily>,
     val hourly: List<Hourly>,
@@ -16,5 +17,6 @@ data class Forecast(
     val lon: Double,
     val minutely: List<Minutely>,
     val timezone: String,
-    val timezone_offset: Int
+    val timezone_offset: Int,
+    var CityName: String = ""
 )

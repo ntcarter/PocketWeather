@@ -99,3 +99,4 @@ lint/tmp/
 local.properties
 
 app/src/main/java/com/ntc/pocketweather/api/util/ApiKey.kt
+apikey.properties

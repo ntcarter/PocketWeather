@@ -1,5 +1,6 @@
 package com.ntc.pocketweather.api.retrofit
 
+import com.ntc.pocketweather.BuildConfig
 import com.ntc.pocketweather.api.response.Forecast
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -7,8 +8,7 @@ import retrofit2.http.Query
 interface ForecastAPI {
 
     companion object {
-        const val API_KEY = "3746dbdd4b2522fc1615e228ea067877"
-        const val BASE_URL = "https://api.openweathermap.org"
+        const val FORECAST_BASE_URL = "https://api.openweathermap.org"
     }
 
     @GET("/data/2.5/onecall")
@@ -16,6 +16,6 @@ interface ForecastAPI {
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
         @Query("units") units: String = "imperial",
-        @Query("appid") apiKey: String = API_KEY
+        @Query("appid") apiKey: String = BuildConfig.FORECAST_API_KEY
     ): Forecast
 }

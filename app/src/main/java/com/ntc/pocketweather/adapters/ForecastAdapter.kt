@@ -1,6 +1,5 @@
 package com.ntc.pocketweather.adapters
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -10,6 +9,8 @@ import com.ntc.pocketweather.api.response.Hourly
 import com.ntc.pocketweather.api.response.Minutely
 import com.ntc.pocketweather.api.response.WeatherMarker
 import com.ntc.pocketweather.databinding.ItemWeatherBinding
+import com.ntc.pocketweather.util.convertTime
+import com.ntc.pocketweather.util.convertTimeToDay
 import com.ntc.pocketweather.util.getWeatherIcon
 
 private const val TAG = "ForecastAdapter"
@@ -27,18 +28,14 @@ class ForecastAdapter(
 
     override fun onBindViewHolder(holder: ForecastViewHolder, position: Int) {
         val item = items[position]
-        Log.d(TAG, "onBindViewHolder: item class : ${item.javaClass}")
         when (item.javaClass.toString()) {
             "class com.ntc.pocketweather.api.response.Minutely" -> {
-                Log.d(TAG, "onBindViewHolder: BINDING MINUTELY")
                 holder.bindMinutely(items[position] as Minutely)
             }
             "class com.ntc.pocketweather.api.response.Hourly" -> {
-                Log.d(TAG, "onBindViewHolder:  BINDING Hourly")
                 holder.bindHourly(items[position] as Hourly)
             }
             "class com.ntc.pocketweather.api.response.Daily" -> {
-                Log.d(TAG, "onBindViewHolder:  BINDING Daily ")
                 holder.bindDaily(items[position] as Daily)
             }
         }
@@ -49,7 +46,7 @@ class ForecastAdapter(
     }
 
     interface OnWeatherClickListener {
-
+        fun onDailyClick(daily: Daily)
     }
 
     inner class ForecastViewHolder(private val binding: ItemWeatherBinding) :
@@ -57,14 +54,13 @@ class ForecastAdapter(
 
         fun bindMinutely(minutely: Minutely) {
             binding.apply {
-                tvWeatherItemTitle.text = minutely.dt.toString()
-                tvItemWeatherCondition.text = "${minutely.precipitation.toString()}%"
+                tvWeatherItemTitle.text = convertTime(minutely.dt, false)
+                tvItemWeatherCondition.text = "${minutely.precipitation} mm"
                 ivWeatherItemIcon.setImageResource(
                     when (minutely.precipitation) {
-                        in 0..15 -> R.drawable.few_clouds_new
-                        in 16..50 -> R.drawable.rain_new
-                        in 50..75 -> R.drawable.shower_rain_new
-                        in 75..100 -> R.drawable.thunderstorm_new
+                        in 0.0.. 0.1 -> R.drawable.few_clouds_new
+                        in 0.1 .. 3.0 -> R.drawable.rain_new
+                        in 3.0.. 100.0 -> R.drawable.shower_rain_new
                         else -> R.drawable.few_clouds_new
                     }
                 )
@@ -73,10 +69,9 @@ class ForecastAdapter(
 
         fun bindHourly(hourly: Hourly) {
             binding.apply {
-                tvWeatherItemTitle.text = hourly.dt.toString()
-                tvItemWeatherCondition.text = hourly.temp.toString()
+                tvWeatherItemTitle.text = convertTime(hourly.dt, false)
+                tvItemWeatherCondition.text = hourly.temp.toString() + "°"
                 if(hourly.weather.isNotEmpty()){
-                    val tmp = hourly.weather[0]
                     ivWeatherItemIcon.setImageResource(
                         getWeatherIcon(hourly.weather[0].icon)
                     )
@@ -89,9 +84,12 @@ class ForecastAdapter(
         }
 
         fun bindDaily(daily: Daily) {
+            binding.root.setOnClickListener {
+                listener.onDailyClick(daily)
+            }
             binding.apply {
-                tvWeatherItemTitle.text = daily.dt.toString()
-                tvItemWeatherCondition.text = daily.temp.toString()
+                tvWeatherItemTitle.text = convertTimeToDay(daily.dt)
+                tvItemWeatherCondition.text = daily.temp.max.toString() + "°"
                 ivWeatherItemIcon.setImageResource(
                     getWeatherIcon(daily.weather[0].icon)
                 )
